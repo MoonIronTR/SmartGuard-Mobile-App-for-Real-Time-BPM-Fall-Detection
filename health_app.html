@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>SmartGuard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+          rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #FF5252;
+            --primary-dark: #C62828;
+            --secondary: #1E88E5;
+            --bg: #FAFAFA;
+            --surface: #FFFFFF;
+            --text: #212121;
+            --muted: #757575;
+            --success: #4CAF50;
+            --warn: #FFC107;
+            --danger: #FF1744;
+            --shadow: 0 2px 10px rgba(0, 0, 0, .06);
+            --radius: 16px;
+        }
+
+        [data-theme="dark"] {
+            --primary: #FF8A80;
+            --primary-dark: #D32F2F;
+            --secondary: #64B5F6;
+            --bg: #121212;
+            --surface: #1E1E1E;
+            --text: #E0E0E0;
+            --muted: #B0B0B0;
+            --shadow: 0 2px 10px rgba(0, 0, 0, .35);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Roboto, system-ui, Segoe UI, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== App Shell ===== */
+        .app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .appbar {
+            height: 58px;
+            flex-shrink: 0;
+            background: var(--surface);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+        }
+
+        .left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-ico {
+            border: none;
+            background: transparent;
+            color: var(--text);
+            padding: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-ico:active {
+            transform: scale(.98)
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 900
+        }
+
+        .brand .material-icons {
+            color: var(--primary)
+        }
+
+        .badge {
+            font-size: 12px;
+            font-weight: 800;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, .08);
+            color: var(--muted);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .badge {
+            background: rgba(255, 255, 255, .12)
+        }
+
+        .badge.on {
+            background: rgba(76, 175, 80, .18);
+            color: var(--success)
+        }
+
+        .badge.connecting {
+            background: rgba(255, 193, 7, 0.18);
+            color: var(--warn);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: .6
+            }
+        }
+
+        /* ===== Drawer ===== */
+        .backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            display: none;
+            z-index: 40;
+        }
+
+        .backdrop.show {
+            display: block
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 280px;
+            max-width: 85vw;
+            background: var(--surface);
+            box-shadow: 12px 0 30px rgba(0, 0, 0, .18);
+            transform: translateX(-103%);
+            transition: transform .25s;
+            z-index: 50;
+            padding: 14px;
+        }
+
+        .drawer.show {
+            transform: translateX(0)
+        }
+
+        .drawer h3 {
+            margin: 10px 6px 12px;
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .navbtn {
+            width: 100%;
+            border-radius: 14px;
+            padding: 12px 12px;
+            border: 1px solid rgba(0, 0, 0, .12);
+            background: transparent;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 900;
+            margin: 8px 0;
+        }
+
+        [data-theme="dark"] .navbtn {
+            border-color: rgba(255, 255, 255, .18)
+        }
+
+        .navbtn .material-icons {
+            color: var(--secondary)
+        }
+
+        .navbtn.active {
+            background: rgba(30, 136, 229, .12);
+            border-color: rgba(30, 136, 229, .2)
+        }
+
+        /* ===== Pages ===== */
+        .pages {
+            flex: 1;
+            position: relative;
+            overflow: hidden
+        }
+
+        .page {
+            position: absolute;
+            inset: 0;
+            overflow-y: auto;
+            padding: 16px;
+            display: none;
+        }
+
+        .page.show {
+            display: block
+        }
+
+        /* ===== Cards ===== */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            border-radius: var(--radius);
+            padding: 22px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(255, 82, 82, .22);
+            margin-bottom: 14px;
+            transition: background 0.3s;
+        }
+
+        .hero.connecting {
+            background: linear-gradient(135deg, #FFA000, #FFC107);
+        }
+
+        .hero .big {
+            font-size: 48px
+        }
+
+        .hero .txt {
+            font-weight: 900;
+            margin-top: 6px;
+            opacity: .95
+        }
+
+        .hero .sub {
+            font-weight: 700;
+            font-size: 12px;
+            opacity: .92;
+            margin-top: 4px
+        }
+
+        .hero .cta {
+            margin-top: 14px;
+            border: none;
+            cursor: pointer;
+            background: rgba(255, 255, 255, .92);
+            color: var(--primary-dark);
+            padding: 10px 22px;
+            border-radius: 999px;
+            font-weight: 1000;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+        }
+
+        .hero .cta:active {
+            transform: scale(.98)
+        }
+
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            border-radius: var(--radius);
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .stat .ico {
+            font-size: 28px;
+            margin-bottom: 6px
+        }
+
+        .stat .val {
+            font-size: 30px;
+            font-weight: 1000
+        }
+
+        .stat .unit {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 800;
+            margin-top: 2px
+        }
+
+        .pulse {
+            animation: pulse 1s infinite
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.08)
+            }
+
+            100% {
+                transform: scale(1)
+            }
+        }
+
+        .grid3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px
+        }
+
+        .mini {
+            padding: 12px;
+            border-radius: var(--radius);
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .mini .lbl {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 1000;
+            letter-spacing: .06em;
+            text-transform: uppercase
+        }
+
+        .mini .v {
+            font-size: 16px;
+            font-weight: 1000;
+            margin-top: 6px
+        }
+
+        .mini .s {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 800;
+            margin-top: 2px
+        }
+
+        .activity {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            border-radius: var(--radius);
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .abox {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: rgba(30, 136, 229, .12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary);
+            flex-shrink: 0;
+        }
+
+        .activity .t {
+            font-weight: 1000
+        }
+
+        .activity .d {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 800;
+            margin-top: 2px
+        }
+
+        .soswrap {
+            display: flex;
+            justify-content: center;
+            margin: 18px 0 10px
+        }
+
+        .sos {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            color: white;
+            background: linear-gradient(135deg, #FF1744, #D50000);
+            box-shadow: 0 12px 20px rgba(213, 0, 0, .35);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 1000;
+        }
+
+        .sos:active {
+            transform: scale(.96)
+        }
+
+        .sos .a {
+            font-size: 18px
+        }
+
+        .sos .b {
+            font-size: 10px;
+            opacity: .9;
+            letter-spacing: .06em
+        }
+
+        /* ===== Forms ===== */
+        .section-title {
+            margin: 0 0 10px;
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            font-weight: 1000;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0
+        }
+
+        .row label {
+            flex: 1;
+            font-weight: 1000;
+            font-size: 13px
+        }
+
+        .row input {
+            width: 150px;
+            max-width: 52vw;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(0, 0, 0, .14);
+            background: transparent;
+            color: var(--text);
+            font-weight: 1000;
+            outline: none;
+        }
+
+        [data-theme="dark"] .row input {
+            border-color: rgba(255, 255, 255, .18)
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            font-weight: 1000;
+        }
+
+        .btn.primary {
+            background: var(--secondary);
+            color: white
+        }
+
+        .btn.outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid rgba(0, 0, 0, .14);
+        }
+
+        [data-theme="dark"] .btn.outline {
+            border-color: rgba(255, 255, 255, .18)
+        }
+
+        .note {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1.35
+        }
+
+        /* Saved number display */
+        .saved-box {
+            margin-top: 8px;
+            padding: 10px;
+            background: rgba(0, 0, 0, .04);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        [data-theme="dark"] .saved-box {
+            background: rgba(255, 255, 255, .06)
+        }
+
+        .saved-lbl {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 800
+        }
+
+        .saved-val {
+            font-size: 16px;
+            font-weight: 1000;
+            margin-top: 4px;
+            color: var(--secondary)
+        }
+
+        /* ===== Simulation buttons ===== */
+        .simgrid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .simbtn {
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(0, 0, 0, .14);
+            background: transparent;
+            color: var(--text);
+            font-weight: 1000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            text-align: left;
+        }
+
+        [data-theme="dark"] .simbtn {
+            border-color: rgba(255, 255, 255, .18)
+        }
+
+        .simbtn:active {
+            transform: scale(.99)
+        }
+
+        /* ===== Bottom icon row (aligned single line) ===== */
+        .iconrow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            margin-top: 12px;
+            opacity: .95;
+        }
+
+        .iconrow .material-icons {
+            font-size: 22px;
+            color: var(--muted)
+        }
+
+        /* ===== Overlay Alert ===== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .overlay.on {
+            display: flex;
+            animation: fade .22s
+        }
+
+        @keyframes fade {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        .ovico {
+            font-size: 86px;
+            color: var(--danger);
+            margin-bottom: 12px;
+            animation: shake .5s infinite;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: rotate(0)
+            }
+
+            25% {
+                transform: rotate(10deg)
+            }
+
+            75% {
+                transform: rotate(-10deg)
+            }
+
+            100% {
+                transform: rotate(0)
+            }
+        }
+
+        .ovt {
+            font-size: 28px;
+            font-weight: 1000;
+            margin-bottom: 8px
+        }
+
+        .ovd {
+            color: var(--muted);
+            font-weight: 800;
+            max-width: 520px;
+            margin-bottom: 18px
+        }
+
+        .ovactions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .okbtn {
+            border: none;
+            border-radius: 999px;
+            padding: 12px 20px;
+            background: var(--text);
+            color: var(--bg);
+            font-weight: 1000;
+            cursor: pointer;
+        }
+
+        .notifybtn {
+            border: none;
+            border-radius: 999px;
+            padding: 12px 20px;
+            background: var(--secondary);
+            color: white;
+            font-weight: 1000;
+            cursor: pointer;
+        }
+
+        .okbtn:active,
+        .notifybtn:active {
+            transform: scale(.98)
+        }
+
+        /* ===== Debug Log ===== */
+        .debug {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 96px;
+            z-index: 999;
+            background: rgba(0, 0, 0, .82);
+            color: #0f0;
+            font-family: monospace;
+            font-size: 10px;
+            overflow-y: auto;
+            padding: 6px;
+            pointer-events: none;
+        }
+
+        .debug.hidden {
+            display: none
+        }
+
+        /* helper: dim when disconnected */
+        .dim {
+            opacity: .55;
+            pointer-events: none;
+            transition: opacity .25s
+        }
+
+        .nodim {
+            opacity: 1;
+            pointer-events: auto
+        }
+    </style>
+</head>
+
+<body>
+<div class="app">
+    <!-- App Bar -->
+    <div class="appbar">
+        <div class="left">
+            <button class="btn-ico" onclick="toggleDrawer()"><span class="material-icons">menu</span></button>
+            <div class="brand">
+                <span class="material-icons">health_and_safety</span>
+                <span>SmartGuard</span>
+            </div>
+        </div>
+        <div class="right">
+            <span class="badge" id="connBadge">Disconnected</span>
+            <button class="btn-ico" onclick="toggleTheme()"><span class="material-icons"
+                                                                  id="themeIcon">dark_mode</span></button>
+        </div>
+    </div>
+
+    <!-- Drawer -->
+    <div class="backdrop" id="backdrop" onclick="toggleDrawer(false)"></div>
+    <div class="drawer" id="drawer">
+        <h3>Menu</h3>
+        <button class="navbtn active" id="nav1" onclick="showPage('dash')"><span
+                class="material-icons">monitor_heart</span> Dashboard</button>
+        <button class="navbtn" id="nav2" onclick="showPage('settings')"><span class="material-icons">tune</span>
+            Thresholds & Caretaker</button>
+        <button class="navbtn" id="nav3" onclick="showPage('sim')"><span class="material-icons">science</span>
+            Simulation</button>
+        <h3>Debug</h3>
+        <button class="navbtn" onclick="toggleDebug()"><span class="material-icons">bug_report</span> Toggle Debug
+            Log</button>
+    </div>
+
+    <!-- Pages -->
+    <div class="pages">
+        <!-- PANEL 1: Dashboard -->
+        <div class="page show" id="pageDash">
+            <div class="hero" id="hero">
+                <div class="big"><span class="material-icons" id="heroIcon"
+                                       style="font-size:48px">bluetooth_searching</span></div>
+                <div class="txt" id="heroTxt">Bracelet not connected</div>
+                <div class="sub" id="heroSub">Tap Connect to start monitoring</div>
+                <button class="cta" id="connBtn" onclick="toggleConnection()">Connect</button>
+            </div>
+
+            <div class="grid2 dim" id="statsBox">
+                <div class="stat">
+                    <span class="material-icons ico" id="heartIco" style="color:var(--primary)">favorite</span>
+                    <div class="val" id="bpmVal">--</div>
+                    <div class="unit">BPM</div>
+                </div>
+                <div class="stat">
+                    <span class="material-icons ico" style="color:var(--secondary)">water_drop</span>
+                    <div class="val" id="spo2Val">--</div>
+                    <div class="unit">SpO2 %</div>
+                </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="grid3 dim" id="motionBox">
+                <div class="mini">
+                    <div class="lbl">G FORCE</div>
+                    <div class="v" id="gVal">--</div>
+                    <div class="s">g</div>
+                </div>
+                <div class="mini">
+                    <div class="lbl">STATE</div>
+                    <div class="v" id="stateVal">--</div>
+                    <div class="s">ACTIVE / INACTIVE</div>
+                </div>
+                <div class="mini">
+                    <div class="lbl">INACT</div>
+                    <div class="v" id="inactVal">--</div>
+                    <div class="s">seconds</div>
+                </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="activity dim" id="actBox">
+                <div class="abox"><span class="material-icons" id="actIcon">accessibility</span></div>
+                <div>
+                    <div class="t" id="actTitle">Activity Status</div>
+                    <div class="d" id="actDesc">Waiting for sensor...</div>
+                </div>
+            </div>
+
+            <div class="soswrap">
+                <button class="sos" onclick="manualSOS()">
+                    <div class="a">SOS</div>
+                    <div class="b">PRESS</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PANEL 2: Thresholds & Caretaker -->
+        <div class="page" id="pageSettings">
+            <div class="card">
+                <div class="section-title">Thresholds (App-side safety)</div>
+                <div class="row">
+                    <label>High BPM</label>
+                    <input id="setHighBpm" type="number" min="30" max="220" />
+                </div>
+                <div class="row">
+                    <label>Low BPM</label>
+                    <input id="setLowBpm" type="number" min="30" max="220" />
+                </div>
+                <div class="row">
+                    <label>High G (impact)</label>
+                    <input id="setHighG" type="number" min="1.0" max="10.0" step="0.01" />
+                </div>
+                <div class="row">
+                    <label>Inactivity seconds</label>
+                    <input id="setInactSec" type="number" min="1" max="3600" />
+                </div>
+
+                <!-- NEW COOLDOWN SETTING -->
+                <div class="row">
+                    <label>Alert Cooldown (sec)</label>
+                    <input id="setCooldownSec" type="number" min="5" max="300" />
+                </div>
+                <div class="note">Time to wait before repeating the same alert (Real-life only).</div>
+
+                <button class="btn primary" onclick="saveThresholds()">Save Thresholds</button>
+            </div>
+
+            <div class="card">
+                <div class="section-title">Caretaker phone</div>
+                <div class="row">
+                    <label>Phone</label>
+                    <input id="caretakerPhone" type="tel" placeholder="e.g., 0533 333 67 69" />
+                </div>
+                <button class="btn primary" onclick="saveCaretaker()">Save Caretaker</button>
+                <div class="note">
+                    Turkish numbers like <b>0533...</b> will be converted to <b>+90</b> format.
+                </div>
+
+                <!-- Saved Phone Display -->
+                <div class="saved-box" id="savedPhoneBox">
+                    <div class="saved-lbl">Currently Saved</div>
+                    <div class="saved-val" id="savedPhoneVal">None</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 3: Simulation -->
+        <div class="page" id="pageSim">
+            <div class="card">
+                <div class="section-title">Simulation controls (UI)</div>
+                <div class="simgrid">
+                    <button class="simbtn" onclick="simVitals({bpm:150, spo2:95, g:1.02, state:'ACTIVE', inact:0})">
+                        ❤️📈 Simulate: High BPM
+                    </button>
+                    <button class="simbtn" onclick="simVitals({bpm:35, spo2:95, g:1.02, state:'ACTIVE', inact:0})">
+                        ❤️📉 Simulate: Low BPM
+                    </button>
+                    <button class="simbtn" onclick="simVitals({bpm:80, spo2:97, g:3.60, state:'ACTIVE', inact:0})">
+                        💥 Simulate: High G impact
+                    </button>
+                    <button class="simbtn"
+                            onclick="simVitals({bpm:78, spo2:97, g:1.02, state:'INACTIVE', inact:25})">
+                        🛑 Simulate: Inactivity
+                    </button>
+                    <button class="simbtn" onclick="simAlert('fall')">
+                        ⚠️📉 Simulate Alert: Fall detected
+                    </button>
+                    <button class="simbtn" onclick="simAlert('inactivity')">
+                        ⚠️💤 Simulate Alert: Inactivity detected
+                    </button>
+                    <button class="simbtn" onclick="simAlert('critical_hr')">
+                        ⚠️❤️ Simulate Alert: Critical heart rate
+                    </button>
+                    <button class="simbtn" onclick="simNoFinger()">
+                        🚫👆 Simulate Status: No finger
+                    </button>
+                </div>
+                <div class="note">
+                    Simulation ignores cooldown. Real monitoring uses your configured cooldown.
+                </div>
+                <div class="iconrow">
+                    <span class="material-icons">favorite</span>
+                    <span class="material-icons">warning</span>
+                    <span class="material-icons">crisis_alert</span>
+                    <span class="material-icons">timer_off</span>
+                    <span class="material-icons">fingerprint_off</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">SMS simulation</div>
+                <div class="simgrid">
+                    <button class="simbtn" onclick="simSms('critical_hr')">
+                        📩❤️ Simulate: Notify caretaker (critical HR)
+                    </button>
+                    <button class="simbtn" onclick="simSms('fall')">
+                        📩💥 Simulate: Notify caretaker (fall)
+                    </button>
+                    <button class="simbtn" onclick="simSms('inactivity')">
+                        📩💤 Simulate: Notify caretaker (inactivity)
+                    </button>
+                </div>
+                <div class="note">
+                    SMS is sent only when you click Notify. Alerts do NOT auto-send SMS to prevent spam.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay">
+        <span class="material-icons ovico">warning</span>
+        <div class="ovt" id="ovTitle">ALERT</div>
+        <div class="ovd" id="ovDesc">...</div>
+        <div class="ovactions">
+            <button class="okbtn" onclick="overlayOk()">OK (Stop Alarm)</button>
+            <button class="notifybtn" onclick="overlayNotify()">Notify caretaker</button>
+        </div>
+    </div>
+
+    <div class="debug hidden" id="debug"></div>
+</div>
+
+<script>
+    // ===== Sound Manager (Synthetic Audio) =====
+    const AudioEngine = {
+        ctx: null,
+        osc: null,
+        interval: null,
+
+        init: function () {
+            if (!this.ctx) {
+                const Ctor = window.AudioContext || window.webkitAudioContext;
+                if (Ctor) this.ctx = new Ctor();
+            }
+        },
+
+        resume: function () {
+            if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+        },
+
+        // Type: 'ble_connect', 'ble_disconnect', 'alarm', 'click'
+        play: function (type) {
+            this.init();
+            this.resume();
+            if (!this.ctx) return;
+
+            // Stop persistent alarm if playing
+            if (type !== 'alarm') this.stopAlarm();
+
+            const t = this.ctx.currentTime;
+            const o = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            o.connect(g);
+            g.connect(this.ctx.destination);
+
+            if (type === 'ble_connect') {
+                // High-Low-High happy chime
+                o.type = 'sine';
+                o.frequency.setValueAtTime(600, t);
+                o.frequency.exponentialRampToValueAtTime(800, t + 0.1);
+                g.gain.setValueAtTime(0.1, t);
+                g.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+                o.start(t);
+                o.stop(t + 0.3);
+            }
+            else if (type === 'ble_disconnect') {
+                // Low-Low sad chime
+                o.type = 'sine';
+                o.frequency.setValueAtTime(400, t);
+                o.frequency.linearRampToValueAtTime(300, t + 0.2);
+                g.gain.setValueAtTime(0.1, t);
+                g.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+                o.start(t);
+                o.stop(t + 0.3);
+            }
+            else if (type === 'click') {
+                o.frequency.setValueAtTime(800, t);
+                g.gain.setValueAtTime(0.05, t);
+                g.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
+                o.start(t);
+                o.stop(t + 0.05);
+            }
+            else if (type === 'alarm') {
+                // Start looping alarm
+                this.stopAlarm(); // clear prev
+                this.loopAlarm();
+            }
+        },
+
+        loopAlarm: function () {
+            if (!this.ctx) return;
+            const playBeep = () => {
+                const t = this.ctx.currentTime;
+                const o = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                o.connect(g);
+                g.connect(this.ctx.destination);
+
+                // Siren like
+                o.type = 'square';
+                o.frequency.setValueAtTime(700, t);
+                o.frequency.linearRampToValueAtTime(950, t + 0.1);
+                o.frequency.linearRampToValueAtTime(700, t + 0.3); // whoop-whoop
+
+                g.gain.setValueAtTime(0.2, t);
+                g.gain.linearRampToValueAtTime(0, t + 0.35);
+
+                o.start(t);
+                o.stop(t + 0.35);
+            };
+
+            playBeep();
+            this.interval = setInterval(playBeep, 600); // Repeat every 600ms
+        },
+
+        stopAlarm: function () {
+            if (this.interval) {
+                clearInterval(this.interval);
+                this.interval = null;
+            }
+        }
+    };
+
+    // ===== Settings storage =====
+    const DEFAULTS = {
+        highBpm: 120, lowBpm: 40, highG: 3.0, inactSec: 20,
+        cooldownSec: 60, // Default 60s cooldown
+        caretakerPhone: "",
+        debug: false
+    };
+    const settings = loadSettings();
+
+    function loadSettings() {
+        try {
+            const raw = localStorage.getItem("sg_settings_v2");
+            if (!raw) return { ...DEFAULTS };
+            const obj = JSON.parse(raw);
+            return { ...DEFAULTS, ...obj };
+        } catch (e) {
+            return { ...DEFAULTS };
+        }
+    }
+    function persistSettings() {
+        localStorage.setItem("sg_settings_v2", JSON.stringify(settings));
+    }
+    function clampInt(v, min, max, fallback) {
+        if (!Number.isFinite(v)) return fallback;
+        return Math.max(min, Math.min(max, v));
+    }
+    function clampFloat(v, min, max, fallback) {
+        if (!Number.isFinite(v)) return fallback;
+        return Math.max(min, Math.min(max, v));
+    }
+
+    // ===== UI refs =====
+    const ui = {
+        drawer: document.getElementById("drawer"),
+        backdrop: document.getElementById("backdrop"),
+        nav1: document.getElementById("nav1"),
+        nav2: document.getElementById("nav2"),
+        nav3: document.getElementById("nav3"),
+        connBadge: document.getElementById("connBadge"),
+        hero: document.getElementById("hero"),
+        heroIcon: document.getElementById("heroIcon"),
+        heroTxt: document.getElementById("heroTxt"),
+        heroSub: document.getElementById("heroSub"),
+        connBtn: document.getElementById("connBtn"),
+        themeIcon: document.getElementById("themeIcon"),
+
+        statsBox: document.getElementById("statsBox"),
+        motionBox: document.getElementById("motionBox"),
+        actBox: document.getElementById("actBox"),
+
+        bpmVal: document.getElementById("bpmVal"),
+        spo2Val: document.getElementById("spo2Val"),
+        gVal: document.getElementById("gVal"),
+        stateVal: document.getElementById("stateVal"),
+        inactVal: document.getElementById("inactVal"),
+
+        heartIco: document.getElementById("heartIco"),
+        actIcon: document.getElementById("actIcon"),
+        actDesc: document.getElementById("actDesc"),
+
+        setHighBpm: document.getElementById("setHighBpm"),
+        setLowBpm: document.getElementById("setLowBpm"),
+        setHighG: document.getElementById("setHighG"),
+        setInactSec: document.getElementById("setInactSec"),
+        setCooldownSec: document.getElementById("setCooldownSec"),
+        caretakerPhone: document.getElementById("caretakerPhone"),
+        savedPhoneVal: document.getElementById("savedPhoneVal"), // box display
+
+        overlay: document.getElementById("overlay"),
+        ovTitle: document.getElementById("ovTitle"),
+        ovDesc: document.getElementById("ovDesc"),
+        debug: document.getElementById("debug"),
+    };
+
+    // ===== Pages =====
+    function toggleDrawer(force) {
+        const willShow = (typeof force === "boolean") ? force : !ui.drawer.classList.contains("show");
+        ui.drawer.classList.toggle("show", willShow);
+        ui.backdrop.classList.toggle("show", willShow);
+    }
+    function showPage(which) {
+        document.getElementById("pageDash").classList.toggle("show", which === "dash");
+        document.getElementById("pageSettings").classList.toggle("show", which === "settings");
+        document.getElementById("pageSim").classList.toggle("show", which === "sim");
+        ui.nav1.classList.toggle("active", which === "dash");
+        ui.nav2.classList.toggle("active", which === "settings");
+        ui.nav3.classList.toggle("active", which === "sim");
+        toggleDrawer(false);
+    }
+
+    // ===== Theme =====
+    let isDark = false;
+    function toggleTheme() {
+        isDark = !isDark;
+        if (isDark) {
+            document.documentElement.setAttribute("data-theme", "dark");
+            ui.themeIcon.textContent = "light_mode";
+        } else {
+            document.documentElement.removeAttribute("data-theme");
+            ui.themeIcon.textContent = "dark_mode";
+        }
+    }
+
+    // ===== Connected UI =====
+    // States: "DISCONNECTED", "CONNECTING", "CONNECTED"
+    let connState = "DISCONNECTED";
+
+    function clearVitals() {
+        S.seq = -1; S.bpm = null; S.spo2 = null; S.g = null;
+        S.state = null; S.inact = null;
+        renderVitals();
+    }
+
+    function setConnState(st) {
+        connState = st;
+
+        // reset classes
+        ui.connBadge.className = "badge";
+        ui.hero.className = "hero";
+        ui.heroIcon.textContent = "bluetooth_searching";
+
+        if (st === "CONNECTED") {
+            ui.connBadge.textContent = "Connected";
+            ui.connBadge.classList.add("on");
+            ui.heroIcon.textContent = "bluetooth_connected";
+            ui.heroTxt.textContent = "Monitoring active";
+            ui.heroSub.textContent = "Receiving data from bracelet";
+            ui.connBtn.textContent = "Disconnect";
+
+            // Enable stats
+            ui.statsBox.classList.remove("dim"); ui.statsBox.classList.add("nodim");
+            ui.motionBox.classList.remove("dim"); ui.motionBox.classList.add("nodim");
+            ui.actBox.classList.remove("dim"); ui.actBox.classList.add("nodim");
+            ui.actDesc.textContent = "Receiving sensor data...";
+            ui.actIcon.textContent = "accessibility_new";
+
+            AudioEngine.play('ble_connect');
+
+        } else if (st === "CONNECTING") {
+            ui.connBadge.textContent = "Connecting...";
+            ui.connBadge.classList.add("connecting"); // blink yellow
+            ui.hero.classList.add("connecting");
+            ui.heroIcon.textContent = "bluetooth_searching";
+            ui.heroTxt.textContent = "Connecting...";
+            ui.heroSub.textContent = "Searching for bracelet...";
+            ui.connBtn.textContent = "Cancel";
+            // Keep stats dim
+        } else {
+            // DISCONNECTED
+            ui.connBadge.textContent = "Disconnected";
+            ui.heroTxt.textContent = "Bracelet not connected";
+            ui.heroSub.textContent = "Tap Connect to start monitoring";
+            ui.connBtn.textContent = "Connect";
+
+            // Dim stats & Clear data
+            ui.statsBox.classList.add("dim"); ui.statsBox.classList.remove("nodim");
+            ui.motionBox.classList.add("dim"); ui.motionBox.classList.remove("nodim");
+            ui.actBox.classList.add("dim"); ui.actBox.classList.remove("nodim");
+            ui.actDesc.textContent = "Waiting for sensor...";
+            ui.actIcon.textContent = "accessibility";
+            ui.heartIco.classList.remove("pulse");
+
+            // Play sound only if intentionally disconnected, not initial load
+            if (st === "DISCONNECTED") AudioEngine.play('ble_disconnect');
+            clearVitals();
+        }
+    }
+
+    function toggleConnection() {
+        AudioEngine.init(); // enable audio context on user gesture
+
+        // If already connected, disconnect
+        if (connState === "CONNECTED") {
+            setConnState("DISCONNECTED");
+            if (window.Android && typeof window.Android.toggleConnection === "function") {
+                window.Android.toggleConnection(); // trigger native disconnect
+            }
+            return;
+        }
+
+        // If connecting, cancel
+        if (connState === "CONNECTING") {
+            setConnState("DISCONNECTED");
+            return;
+        }
+
+        // If disconnected, start connecting
+        if (connState === "DISCONNECTED") {
+            setConnState("CONNECTING"); // Immediate UI feedback!
+
+            // Browser simulation
+            if (!window.Android) {
+                setTimeout(() => setConnState("CONNECTED"), 1500);
+                return;
+            }
+
+            // Native Call
+            try {
+                if (typeof window.Android.toggleConnection === "function") {
+                    window.Android.toggleConnection();
+                }
+            } catch (e) {
+                log("Native error: " + e);
+                setConnState("DISCONNECTED"); // revert on error
+            }
+        }
+    }
+
+    // ===== Panel 2: Settings =====
+    function applySettingsToUI() {
+        ui.setHighBpm.value = settings.highBpm;
+        ui.setLowBpm.value = settings.lowBpm;
+        ui.setHighG.value = settings.highG;
+        ui.setInactSec.value = settings.inactSec;
+        ui.setCooldownSec.value = settings.cooldownSec || 60;
+        ui.caretakerPhone.value = settings.caretakerPhone || "";
+        ui.debug.classList.toggle("hidden", !settings.debug);
+
+        // update saved display
+        ui.savedPhoneVal.textContent = settings.caretakerPhone || "None";
+    }
+
+    function saveThresholds() {
+        settings.highBpm = clampInt(parseInt(ui.setHighBpm.value, 10), 30, 220, DEFAULTS.highBpm);
+        settings.lowBpm  = clampInt(parseInt(ui.setLowBpm.value, 10), 30, 220, DEFAULTS.lowBpm);
+        settings.highG   = clampFloat(parseFloat(ui.setHighG.value), 1.0, 10.0, DEFAULTS.highG);
+        settings.inactSec = clampInt(parseInt(ui.setInactSec.value, 10), 1, 3600, DEFAULTS.inactSec);
+        settings.cooldownSec = clampInt(parseInt(ui.setCooldownSec.value, 10), 5, 300, 60);
+
+        persistSettings();
+
+        // ✅ Popup/overlay yok — caretaker gibi "Saved!" feedback
+        const btn = document.activeElement;
+        if (btn && btn.textContent) {
+            const oldKey = btn.textContent;
+            btn.textContent = "Saved!";
+            setTimeout(() => btn.textContent = oldKey, 1000);
+        }
+
+        log("[SETTINGS] Thresholds saved. Cooldown=" + settings.cooldownSec);
+    }
+
+    function saveCaretaker() {
+        const raw = (ui.caretakerPhone.value || "").trim();
+        settings.caretakerPhone = raw;
+        persistSettings();
+        try {
+            if (window.Android && typeof window.Android.saveCaretakerNumber === "function") {
+                window.Android.saveCaretakerNumber(raw);
+            }
+        } catch (e) { }
+        log("[SETTINGS] Caretaker saved: " + raw);
+
+        // update display
+        ui.savedPhoneVal.textContent = raw || "None";
+
+        const btn = document.activeElement;
+        if (btn && btn.textContent) {
+            const oldKey = btn.textContent;
+            btn.textContent = "Saved!";
+            setTimeout(() => btn.textContent = oldKey, 1000);
+        }
+    }
+
+    // ===== State =====
+    const S = {
+        seq: -1, bpm: null, spo2: null, g: null,
+        state: null, inact: null,
+        lastPacketMs: 0,
+        overlayType: null // "critical_hr" | "fall" | "inactivity" | "manual_sos" | ...
+    };
+
+    // ===== Overlay =====
+    function showOverlay(title, desc, type, silent) {
+        ui.ovTitle.textContent = title;
+        ui.ovDesc.textContent = desc;
+        ui.overlay.classList.add("on");
+        S.overlayType = type || null;
+
+        if (!silent) {
+            // Play ALARM sound
+            AudioEngine.play('alarm');
+        }
+    }
+    function hideOverlay() {
+        ui.overlay.classList.remove("on");
+        S.overlayType = null;
+        AudioEngine.stopAlarm(); // Stop sound
+
+        // ✅ panic'te gizlediğimiz Notify butonunu geri aç
+        try {
+            const nb = document.querySelector(".notifybtn");
+            if (nb) nb.style.display = "";
+        } catch (e) { }
+    }
+
+    function overlayOk() {
+        hideOverlay();
+        // Optional STOP command to device
+        try {
+            if (window.Android && typeof window.Android.sendCommand === "function") {
+                window.Android.sendCommand("S");
+            }
+        } catch (e) { }
+    }
+    function overlayNotify() {
+        console.log("[NOTIFY CLICK] overlayType=", S.overlayType, "inact=", S.inact);
+        AudioEngine.stopAlarm();
+        const msg = buildSmsForType(S.overlayType || "custom");
+        console.log("[NOTIFY MSG] ", msg);
+
+        if (!msg) {
+            alert("Please set a caretaker phone number first.");
+            return;
+        }
+        sendSms(msg);
+        ui.ovTitle.textContent = "MESSAGE SENT";
+        ui.ovDesc.textContent = "Caretaker has been notified.";
+        setTimeout(hideOverlay, 2000);
+    }
+
+
+    // ===== SMS send =====
+    function sendSms(message) {
+        try {
+            if (window.Android && typeof window.Android.sendSms === "function") {
+                window.Android.sendSms(message);
+                log("[SMS] requested: " + message);
+                return;
+            }
+        } catch (e) { }
+        log("Native SMS not available. Msg: " + message);
+    }
+
+    function buildSmsForType(type) {
+        // HTML tarafında sms akışını bloklamayalım.
+        // Java zaten numara yoksa CARETAKER_MISSING basıyor.
+        const hasPhone = (settings.caretakerPhone || "").trim().length > 0;
+
+        const bpm = S.bpm;
+        const g = S.g;
+        const inact = S.inact;
+        const t = (type || "").toLowerCase();
+
+        // ===============================
+        // 🆘 DONANIM PANIC BUTONU
+        // - Vitals YOK
+        // - Sabit mesaj
+        // - Konum Java'da eklenecek
+        // ===============================
+        if (t === "panic") {
+            return `🚨 PANIC BUTTON: Emergency button pressed on device.` +
+                (hasPhone ? "" : " (No caretaker number saved)");
+        }
+
+        // ===============================
+        // HAREKETSIZLIK
+        // ===============================
+        if (t === "inactivity" || t === "inact" || t === "inactive") {
+            const sec = (inact != null && inact > 0) ? inact : (settings.inactSec || 20);
+            return `Alert: No movement detected for ${sec}s. Check patient.` +
+                (hasPhone ? "" : " (No caretaker number saved)");
+        }
+
+        // ===============================
+        // KRITIK NABIZ
+        // ===============================
+        if (t === "critical_hr") {
+            if (bpm != null && bpm > 0) {
+                return `Critical: Heart Rate is ${bpm} BPM. Please check patient immediately.` +
+                    (hasPhone ? "" : " (No caretaker number saved)");
+            }
+            return `Critical: Abnormal Heart Rate detected. Please check patient immediately.` +
+                (hasPhone ? "" : " (No caretaker number saved)");
+        }
+
+        // ===============================
+        // DUSME
+        // ===============================
+        if (t === "fall") {
+            if (g != null) {
+                return `Emergency: Fall detected (${g.toFixed(2)}g). Please check patient immediately.` +
+                    (hasPhone ? "" : " (No caretaker number saved)");
+            }
+            return `Emergency: Fall/Impact detected. Please check patient immediately.` +
+                (hasPhone ? "" : " (No caretaker number saved)");
+        }
+
+        // ===============================
+        // MANUAL SOS (UI'dan basilan)
+        // ===============================
+        if (t === "manual_sos") {
+            return `SOS: Patient pressed Emergency Button. Contact immediately.` +
+                (hasPhone ? "" : " (No caretaker number saved)");
+        }
+
+        // ===============================
+        // DEFAULT (GENEL)
+        // ===============================
+        const parts = [];
+        if (bpm) parts.push(`HR:${bpm}`);
+        if (g) parts.push(`G:${g.toFixed(1)}`);
+
+        return `SmartGuard Alert. ${parts.join(" ")}. Check patient.` +
+            (hasPhone ? "" : " (No caretaker number saved)");
+    }
+    // ===== Manual SOS =====
+    function manualSOS() {
+        showOverlay("MANUAL SOS", "Emergency button pressed.", "manual_sos");
+        try {
+            if (window.Android && typeof window.Android.sendCommand === "function") {
+                window.Android.sendCommand("A");
+            }
+        } catch (e) { }
+    }
+
+    // ===== Parse BLE lines =====
+    let buffer = "";
+    window.updateFromAndroid = function (dataString) {
+        ingestRaw(dataString);
+    };
+
+    function ingestRaw(raw) {
+        if (connState !== "CONNECTED" && connState !== "CONNECTING") return;
+        if (raw == null) return;
+
+        let s = String(raw);
+
+        // ✅ FIX: "\\n" -> "\n"
+        s = s.replace(/\\n/g, "\n").replace(/\\r/g, "\r");
+
+        buffer += s;
+        buffer = buffer.replace(/\r/g, "");
+
+        let idx;
+        while ((idx = buffer.indexOf("\n")) !== -1) {
+            const line = buffer.slice(0, idx).trim();
+            buffer = buffer.slice(idx + 1);
+            if (line) handleLine(line);
+        }
+        if (buffer.length > 800) buffer = "";
+    }
+
+    function parseKV(line) {
+        const obj = {};
+        const parts = line.split(",");
+        for (let p of parts) {
+            p = p.trim();
+            const k = p.indexOf(":");
+            if (k === -1) continue;
+            const key = p.slice(0, k).trim().toUpperCase();
+            const val = p.slice(k + 1).trim();
+            obj[key] = val;
+        }
+        return obj;
+    }
+
+    function toInt(v) {
+        const n = parseInt(String(v).trim(), 10);
+        return Number.isFinite(n) ? n : null;
+    }
+    function toFloat(v) {
+        const n = parseFloat(String(v).trim());
+        return Number.isFinite(n) ? n : null;
+    }
+
+    function handleLine(line) {
+        log("> " + line);
+        const obj = parseKV(line);
+
+        // ===== STATUS handling (always) =====
+        if (obj.STATUS) {
+            const st = String(obj.STATUS).toUpperCase();
+            if (st === "CONNECTING") setConnState("CONNECTING");
+            if (st === "CONNECTED") setConnState("CONNECTED");
+            if (st === "DISCONNECTED") setConnState("DISCONNECTED");
+
+            if (st === "NO_FINGER") applyNoFingerUI(false);
+            if (st === "CARETAKER_MISSING") alert("Please set a caretaker phone number.");
+        }
+
+        // VITALS only when fully CONNECTED
+        const allowVitals = (connState === "CONNECTED");
+
+        // ===== Parse VITALS fields =====
+        let gotVitals = false;
+
+        if (obj.BPM !== undefined)  { S.bpm  = toInt(obj.BPM);  gotVitals = true; }
+        if (obj.SPO2 !== undefined) { S.spo2 = toInt(obj.SPO2); gotVitals = true; }
+        if (obj.G !== undefined)    { S.g    = toFloat(obj.G);  gotVitals = true; }
+
+        if (obj.STATE !== undefined) {
+            S.state = String(obj.STATE).toUpperCase();
+            gotVitals = true;
+        }
+
+        if (obj.ACTIVE !== undefined) {
+            const a = toInt(obj.ACTIVE);
+            if (a !== null) {
+                S.state = (a === 1) ? "ACTIVE" : "INACTIVE";
+                gotVitals = true;
+            }
+        }
+
+        if (obj.INACT !== undefined) { S.inact = toInt(obj.INACT); gotVitals = true; }
+
+        if (gotVitals && allowVitals) {
+            S.lastPacketMs = Date.now();
+            renderVitals();
+            runRealLifeTriggers();
+        }
+
+        // ============================
+        // ✅ PANIC AUTO-SMS helper
+        // - Cooldown: settings.cooldownSec (aynı mekanizma)
+        // - Message: sabit, vitals yok
+        // - Konum: Java buildSmsWithOptionalLocation ekliyor
+        // ============================
+        function autoSendPanicSmsOnce() {
+            // aynı cooldown
+            if (!canAlert("PANIC_SMS")) {
+                log("[PANIC_SMS] Ignored due to cooldown");
+                return;
+            }
+            markAlert("PANIC_SMS");
+
+            const msg = buildSmsForType("panic"); // vitals'sız sabit mesaj
+            sendSms(msg);
+
+            log("[PANIC_SMS] Auto SMS requested");
+        }
+
+        // ✅ BACKUP PANIC: FLAGS bit0 (PANIC_BUTTON)
+        if (obj.FLAGS !== undefined) {
+            const flags = toInt(obj.FLAGS);
+            if (flags != null && (flags & 0x01) === 0x01) {
+                // overlay + siren
+                if (canAlert("PANIC")) {
+                    markAlert("PANIC");
+
+                    // Notify caretaker butonunu gizle (çünkü auto SMS gidiyor)
+                    try {
+                        const nb = document.querySelector(".notifybtn");
+                        if (nb) nb.style.display = "none";
+                    } catch (e) { }
+
+                    showOverlay("PANIC BUTTON", "Emergency button pressed on device.", "panic");
+                } else {
+                    log("[PANIC] Ignored due to cooldown");
+                }
+
+                // ✅ Auto SMS (tek sefer)
+                autoSendPanicSmsOnce();
+            }
+        }
+
+        // ✅ ALARM handling
+        if (obj.ALARM !== undefined) {
+            const a = String(obj.ALARM).toUpperCase();
+
+            if (a === "MANUAL") {
+                if (canAlert("PANIC")) {
+                    markAlert("PANIC");
+
+                    // Notify caretaker butonunu gizle (çünkü auto SMS gidiyor)
+                    try {
+                        const nb = document.querySelector(".notifybtn");
+                        if (nb) nb.style.display = "none";
+                    } catch (e) { }
+
+                    showOverlay("PANIC BUTTON", "Emergency button pressed on device.", "panic");
+                } else {
+                    log("[PANIC] Ignored due to cooldown");
+                }
+
+                // ✅ Auto SMS (tek sefer)
+                autoSendPanicSmsOnce();
+                return;
+            }
+
+            if (a === "STOP") {
+                hideOverlay();
+                return;
+            }
+        }
+    }
+
+    // ===== Render vitals =====
+    function renderVitals() {
+        // ✅ DISCONNECTED iken asla veri gösterme (mevcut şartı koruyoruz)
+        if (connState !== "CONNECTED") {
+            // CONNECTED değilken vitals alanlarını boş tut
+            ui.bpmVal.textContent = "--";
+            ui.spo2Val.textContent = "--";
+            ui.gVal.textContent = "--";
+            ui.stateVal.textContent = "--";
+            ui.inactVal.textContent = "--";
+            ui.heartIco.classList.remove("pulse");
+            return;
+        }
+
+        // ===== BPM ayrı =====
+        const hasBpm = (S.bpm != null && S.bpm > 0);
+        ui.bpmVal.textContent = hasBpm ? String(S.bpm) : "--";
+
+        // ===== SpO2 ayrı =====
+        const hasSpo2 = (S.spo2 != null && S.spo2 > 0);
+        ui.spo2Val.textContent = hasSpo2 ? String(S.spo2) : "--";
+
+        // Heart pulse: BPM veya SpO2’den en az biri geldiyse pulse ver
+        if (hasBpm || hasSpo2) ui.heartIco.classList.add("pulse");
+        else ui.heartIco.classList.remove("pulse");
+
+        // ===== G =====
+        if (S.g == null) ui.gVal.textContent = "--";
+        else ui.gVal.textContent = S.g.toFixed(2);
+
+        // ===== STATE =====
+        ui.stateVal.textContent = (S.state || "--");
+
+        // ===== INACT =====
+        if (S.inact == null) ui.inactVal.textContent = "--";
+        else ui.inactVal.textContent = String(S.inact);
+
+        // ===== Activity text/icon (STATE varsa ona göre, yoksa genel) =====
+        const st = ui.stateVal.textContent;
+        if (st === "ACTIVE") {
+            ui.actDesc.textContent = "Active / moving";
+            ui.actIcon.textContent = "directions_walk";
+        } else if (st === "INACTIVE") {
+            ui.actDesc.textContent = (S.inact != null) ? `Inactive for ${S.inact}s` : "Inactive";
+            ui.actIcon.textContent = "airline_seat_recline_normal";
+        } else {
+            // STATE yoksa ama BPM/SPO2/G vs. gelebilir → genel mesaj
+            if (hasBpm || hasSpo2 || S.g != null || S.inact != null) {
+                ui.actDesc.textContent = "Receiving sensor data...";
+                ui.actIcon.textContent = "accessibility_new";
+            } else {
+                ui.actDesc.textContent = "Waiting for sensor...";
+                ui.actIcon.textContent = "accessibility";
+            }
+        }
+    }
+    function applyNoFingerUI(fromVitals) {
+        // ✅ sadece açıklama/ikon — değerleri renderVitals() belirliyor
+        ui.actDesc.textContent = "⚠️ Sensor: Check Finger Position";
+        ui.actIcon.textContent = "fingerprint_off";
+        ui.heartIco.classList.remove("pulse");
+    }
+
+    // ===== Real-life cooldown logic =====
+    const cooldown = { last: new Map() };
+
+    function canAlert(key) {
+        const now = Date.now();
+        const prev = cooldown.last.get(key);
+        if (!prev) return true;
+        const limit = (settings.cooldownSec || 60) * 1000;
+        return (now - prev) >= limit;
+    }
+    function markAlert(key) {
+        cooldown.last.set(key, Date.now());
+    }
+
+    function runRealLifeTriggers() {
+        // HIGH/LOW BPM
+        if (S.bpm != null && S.bpm > 0) {
+            if (S.bpm >= settings.highBpm && canAlert("HIGH_BPM")) {
+                markAlert("HIGH_BPM");
+                showOverlay("HIGH BPM", `BPM=${S.bpm} (≥ ${settings.highBpm})`, "critical_hr");
+            }
+            if (S.bpm <= settings.lowBpm && canAlert("LOW_BPM")) {
+                markAlert("LOW_BPM");
+                showOverlay("LOW BPM", `BPM=${S.bpm} (≤ ${settings.lowBpm})`, "critical_hr");
+            }
+        }
+        // HIGH G
+        if (S.g != null && S.g >= settings.highG && canAlert("HIGH_G")) {
+            markAlert("HIGH_G");
+            showOverlay("HIGH G IMPACT", `Impact detected. G=${S.g.toFixed(2)}g (≥ ${settings.highG})`, "fall");
+        }
+        // INACTIVITY
+        if (S.inact != null && S.inact >= settings.inactSec && canAlert("INACT")) {
+            markAlert("INACT");
+            showOverlay("INACTIVITY", `No movement for ${S.inact}s (≥ ${settings.inactSec}s)`, "inactivity");
+        }
+    }
+
+    // ===== Simulation (NO cooldown) =====
+    function simVitals({ bpm, spo2, g, state, inact }) {
+        // Updated: Simulation allowed even if disconnected (Testing mode)
+
+        // Update state immediately
+        S.bpm = bpm; S.spo2 = spo2; S.g = g; S.state = state; S.inact = inact;
+        renderVitals();
+
+        // Logic checks WITHOUT cooldown
+        if (bpm != null && bpm >= settings.highBpm) {
+            showOverlay("HIGH BPM", `BPM=${bpm} (≥ ${settings.highBpm})`, "critical_hr");
+        } else if (bpm != null && bpm <= settings.lowBpm) {
+            showOverlay("LOW BPM", `BPM=${bpm} (≤ ${settings.lowBpm})`, "critical_hr");
+        }
+
+        if (g != null && g >= settings.highG) {
+            showOverlay("HIGH G IMPACT", `Impact detected. G=${g.toFixed(2)}g`, "fall");
+        }
+        if (inact != null && inact >= settings.inactSec) {
+            showOverlay("INACTIVITY", `No movement for ${inact}s`, "inactivity");
+        }
+    }
+
+    function simAlert(type) {
+        // Updated: Simulation allowed even if disconnected
+        const t = String(type || "").toLowerCase();
+
+        if (t === "fall") {
+            showOverlay("FALL DETECTED", `Impact simulation.`, "fall");
+        } else if (t === "inactivity") {
+            showOverlay("INACTIVITY", `Inactivity simulation.`, "inactivity");
+        } else if (t === "critical_hr") {
+            showOverlay("CRITICAL HR", `Heart rate critical simulation.`, "critical_hr");
+        }
+    }
+
+    function simNoFinger() {
+        // Updated: Simulation allowed even if disconnected
+        applyNoFingerUI(false);
+        showOverlay("NO FINGER", "Sensor has no finger contact.", null, true);
+    }
+
+    function simSms(kind) {
+        // SMS sim doesn't need dashboard state, just phone number.
+        const msg = buildSmsForType(kind);
+        if (!msg) {
+            alert("Please set a caretaker phone number first.");
+            return;
+        }
+        sendSms(msg);
+        showOverlay("MESSAGE SENT", "Simulation: Caretaker notified.", null, true);
+    }
+
+    // ===== Debug =====
+    function log(msg) {
+        if (!settings.debug) return;
+        const div = document.createElement("div");
+        div.textContent = msg;
+        ui.debug.appendChild(div);
+        ui.debug.scrollTop = ui.debug.scrollHeight;
+        if (ui.debug.childElementCount > 80) {
+            ui.debug.removeChild(ui.debug.firstChild);
+        }
+    }
+    function toggleDebug() {
+        settings.debug = !settings.debug;
+        persistSettings();
+        ui.debug.classList.toggle("hidden", !settings.debug);
+        toggleDrawer(false);
+    }
+
+    // ===== Boot =====
+    AudioEngine.init();
+    applySettingsToUI();
+    setConnState("DISCONNECTED"); // Ensures UI starts clean
+
+    // stale data indicator
+    setInterval(() => {
+        if (S.lastPacketMs && connState === "CONNECTED") {
+            const age = Date.now() - S.lastPacketMs;
+            // Don't show stale if connecting, only if connected
+            if (age > 5000) {
+                ui.actDesc.textContent = "No data received (stale)";
+                ui.actIcon.textContent = "wifi_off";
+            }
+        }
+    }, 1000);
+</script>
+</body>
+
+</html>
